@@ -148,6 +148,7 @@
 				DEVELOPMENT_TEAM = 9G6V47L895;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BlackWhiteApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Monochrome;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -175,6 +176,7 @@
 				DEVELOPMENT_TEAM = 9G6V47L895;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BlackWhiteApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Monochrome;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
