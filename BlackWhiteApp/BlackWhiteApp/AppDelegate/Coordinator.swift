@@ -5,9 +5,13 @@
 //  Created by Ivan on 11/15/24.
 //
 import UIKit
+import PhotosUI
+import Combine
 
 final class Coordinator {
     let window: UIWindow
+    
+    private var imagePickerSubject: PassthroughSubject<UIImage, Never>?
     
     init(window: UIWindow) {
         self.window = window
@@ -26,7 +30,7 @@ final class Coordinator {
     }
     
     private var photoEffectController: UIViewController {
-        let controller = UINavigationController(rootViewController: PhotoEffect.ViewController())
+        let controller = UINavigationController(rootViewController: PhotoEffect.ViewController(viewModel: PhotoEffect.ViewModel(coordinator: self)))
         controller.tabBarItem.image = UIImage(systemName: "photo")
         return controller
     }
@@ -35,5 +39,40 @@ final class Coordinator {
         let controller = UINavigationController(rootViewController: Settings.ViewController())
         controller.tabBarItem.image = UIImage(systemName: "gearshape")
         return controller
+    }
+}
+
+extension Coordinator: ErrorHandler {
+    func handleError(_ error: any Error) {
+        window.rootViewController?.present(UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert), animated: true)
+    }
+}
+
+extension Coordinator: ImagePickerPresenter {
+    func presentImagePicker(subject: PassthroughSubject<UIImage, Never>) {
+        var configuration = PHPickerConfiguration()
+        configuration.selectionLimit = 1
+        configuration.filter = .images
+        let pickerViewController = PHPickerViewController(configuration: configuration)
+        pickerViewController.delegate = self
+        self.imagePickerSubject = subject
+        window.rootViewController?.present(pickerViewController, animated: true)
+    }
+    
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        guard let itemProvider = results.first?.itemProvider,
+              itemProvider.canLoadObject(ofClass: UIImage.self) else { return }
+        
+        itemProvider.loadObject(ofClass: UIImage.self) { [weak self] image , error  in
+            if let error {
+                self?.handleError(error)
+            }
+            if let selectedImage = image as? UIImage{
+                DispatchQueue.main.async {
+                    self?.imagePickerSubject?.send(selectedImage)
+                }
+            }
+        }
     }
 }
