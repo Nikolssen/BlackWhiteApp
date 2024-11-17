@@ -25,19 +25,26 @@ final class Coordinator {
     
     private var tabBarController: UITabBarController? {
         let controller = UITabBarController()
+        let appearance = UITabBarAppearance()
+        appearance.backgroundEffect = UIBlurEffect(style: .systemMaterial)
+        controller.tabBar.standardAppearance = appearance
+        controller.tabBar.scrollEdgeAppearance = appearance
+        controller.tabBar.tintColor = .green
         controller.viewControllers = [photoEffectController, settingsController]
         return controller
     }
     
     private var photoEffectController: UIViewController {
         let controller = UINavigationController(rootViewController: PhotoEffect.ViewController(viewModel: PhotoEffect.ViewModel(coordinator: self)))
-        controller.tabBarItem.image = UIImage(systemName: "photo")
+        controller.tabBarItem.image = UIImage(systemName: "scribble.variable")
+        controller.tabBarItem.title = "Photo Effect"
         return controller
     }
     
     private var settingsController: UIViewController {
         let controller = UINavigationController(rootViewController: Settings.ViewController())
         controller.tabBarItem.image = UIImage(systemName: "gearshape")
+        controller.tabBarItem.title = "Settings"
         return controller
     }
 }
