@@ -130,20 +130,21 @@ extension PhotoEffect {
                 let newCenter = CGPoint(x: initialCenter.x + translation.x, y: initialCenter.y + translation.y)
                 view.center = newCenter
             }
+            if gestureRecognizer.state == .ended {
+                initialCenter = view.center
+            }
         }
         
         @objc private func zoomImage(_ gestureRecognizer: UIPinchGestureRecognizer) {
             guard let view = gestureRecognizer.view else { return }
-            
+            print(gestureRecognizer.state.rawValue, gestureRecognizer.scale)
             if gestureRecognizer.state == .began || gestureRecognizer.state == .changed {
                 let transform = view.transform.scaledBy(x: gestureRecognizer.scale, y: gestureRecognizer.scale)
-                let size = view.frame.size.applying(transform)
-                if min(size.height, size.width) >= 100 {
-                    view.frame.size = size
+                if transform.a < 4 && transform.a > 0.25 {
+                    view.transform = transform
                 }
-                
-                gestureRecognizer.scale = 1.0
             }
+            gestureRecognizer.scale = 1.0
         }
         
         @objc private func rotateImage(_ gestureRecognizer: UIRotationGestureRecognizer) {
@@ -151,14 +152,11 @@ extension PhotoEffect {
             
             if gestureRecognizer.state == .began || gestureRecognizer.state == .changed {
                 view.transform = view.transform.rotated(by: gestureRecognizer.rotation)
-                gestureRecognizer.rotation = 0
+                print(view.frame, view.bounds)
             }
+            gestureRecognizer.rotation = 0
         }
-        
-        
-        
     }
-    
 }
 
 extension PhotoEffect.ViewController: UIGestureRecognizerDelegate {
