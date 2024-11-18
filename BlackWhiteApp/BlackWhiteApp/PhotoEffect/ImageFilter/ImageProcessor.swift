@@ -29,12 +29,17 @@ final class ImageProcessor {
         inputSubject
             .combineLatest(selectedFilterSubject)
             .sink { [weak self] (image, filter) in
-            guard let self, let ciImage = CIImage(image: image) else { return }
-            filter.setValue(ciImage, forKey: kCIInputImageKey)
-            if let result = filter.outputImage {
-                outputSubject.send(UIImage(ciImage: result, scale: image.scale, orientation: image.imageOrientation))
+                guard let self, let ciImage = CIImage(image: image) else { return }
+                filter.setValue(ciImage, forKey: kCIInputImageKey)
+                
+                // Workaround because UIImage created directly from CIImage doesn't save to gallery
+                if let result = filter.outputImage {
+                    let context = CIContext()
+                    if let cgImage = context.createCGImage(result, from: result.extent) {
+                        outputSubject.send(UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation))
+                    }
+                }
             }
-        }
         .store(in: &cancellables)
         
     }

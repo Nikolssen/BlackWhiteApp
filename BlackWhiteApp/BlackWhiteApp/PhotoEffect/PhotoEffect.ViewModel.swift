@@ -65,9 +65,14 @@ extension PhotoEffect {
             filterSelectionIndexSubject
                 .sink { [weak self] index in
                     guard let self, let image else { return }
-                    imageProcessor.selectedFilterSubject.send(filters[index].filter)
-                    imageProcessor.inputSubject.send(image)
-                    
+                    if let filter = filters[index].filter {
+                        imageProcessor.selectedFilterSubject.send(filter)
+                        imageProcessor.inputSubject.send(image)
+                    } else {
+                        processedImage = nil
+                        isImageSelectedSubject.send(true)
+                    }
+
                 }
                 .store(in: &cancellables)
             

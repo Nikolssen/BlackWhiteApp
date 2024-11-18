@@ -159,13 +159,16 @@ extension PhotoEffect {
             }
             
             let menuItem = UIBarButtonItem(image: UIImage(systemName: Constants.effectImageName), menu: UIMenu.init(title: Constants.effectTitle, children: actions))
-            toolBar.items = [
+            
+            let items = [
                 UIBarButtonItem(title: Constants.clearTitle, image: nil, target: self, action: #selector(clear)),
                 UIBarButtonItem.flexibleSpace(),
                 menuItem,
                 UIBarButtonItem.flexibleSpace(),
                 UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(save))
             ]
+            
+            toolBar.setItems(items, animated: true)
         }
         
         @objc private func save() {

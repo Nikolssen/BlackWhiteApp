@@ -7,7 +7,7 @@
 import CoreImage.CIFilterBuiltins
 
 struct ImageFilter {
-    let filter: CIFilter
+    let filter: CIFilter?
     let title: String
 }
 
@@ -26,6 +26,7 @@ extension ImageFilter {
         let sobelEffect = CIFilter.sobelGradients()
         
         return [
+            ImageFilter(filter: nil, title: "Original"),
             ImageFilter(filter: monoFilter, title: "Mono"),
             ImageFilter(filter: monochromeFilter, title: "Blue Monochrome"),
             ImageFilter(filter: sepiaFilter, title: "Sepia"),
