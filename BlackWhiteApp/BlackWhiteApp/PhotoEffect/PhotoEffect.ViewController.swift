@@ -98,7 +98,7 @@ extension PhotoEffect {
                         let isProcessed = viewModel.processedImage != nil
                         draggableImageView.image = image
                        
-                        if !isProcessed {
+                        if !isProcessed && !viewModel.isRestored {
                             draggableImageView.transform = .identity
                             let ratio = image.size.width / image.size.height
                             

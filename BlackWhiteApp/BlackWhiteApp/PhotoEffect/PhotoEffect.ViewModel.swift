@@ -23,6 +23,7 @@ extension PhotoEffect {
         let requestImageSubject: PassthroughSubject<Void, Never> = .init()
         let saveImageSubject: PassthroughSubject<Void, Never> = .init()
         let filterSelectionIndexSubject: PassthroughSubject<Int, Never> = .init()
+        var isRestored: Bool = false
         
         private let imageSelectionSubject: PassthroughSubject<UIImage, Never> = .init()
         private let imageProcessor: ImageProcessor = .init()
@@ -48,6 +49,7 @@ extension PhotoEffect {
                     guard let self else { return }
                     self.image = image
                     processedImage = nil
+                    isRestored = false
                     isImageSelectedSubject.send(true)
                 }
                 .store(in: &cancellables)
@@ -58,6 +60,7 @@ extension PhotoEffect {
                     if !isSelected {
                         image = nil
                         processedImage = nil
+                        isRestored = false
                     }
                 }
                 .store(in: &cancellables)
@@ -70,9 +73,9 @@ extension PhotoEffect {
                         imageProcessor.inputSubject.send(image)
                     } else {
                         processedImage = nil
+                        isRestored = true
                         isImageSelectedSubject.send(true)
                     }
-
                 }
                 .store(in: &cancellables)
             
