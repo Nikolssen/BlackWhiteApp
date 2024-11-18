@@ -149,6 +149,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BlackWhiteApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Monochrome;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Application requires access to gallery in order to save your processed images";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -177,6 +178,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BlackWhiteApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Monochrome;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Application requires access to gallery in order to save your processed images";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

@@ -29,29 +29,31 @@ final class Coordinator {
         appearance.backgroundEffect = UIBlurEffect(style: .systemMaterial)
         controller.tabBar.standardAppearance = appearance
         controller.tabBar.scrollEdgeAppearance = appearance
-        controller.tabBar.tintColor = .green
+        controller.tabBar.tintColor = .black
         controller.viewControllers = [photoEffectController, settingsController]
         return controller
     }
     
     private var photoEffectController: UIViewController {
         let controller = UINavigationController(rootViewController: PhotoEffect.ViewController(viewModel: PhotoEffect.ViewModel(coordinator: self)))
-        controller.tabBarItem.image = UIImage(systemName: "scribble.variable")
-        controller.tabBarItem.title = "Photo Effect"
+        controller.tabBarItem.image = UIImage(systemName: Constants.effectImageName)
+        controller.tabBarItem.title = Constants.photoEffectTitle
         return controller
     }
     
     private var settingsController: UIViewController {
         let controller = UINavigationController(rootViewController: Settings.ViewController())
-        controller.tabBarItem.image = UIImage(systemName: "gearshape")
-        controller.tabBarItem.title = "Settings"
+        controller.tabBarItem.image = UIImage(systemName: Constants.settingsImageName)
+        controller.tabBarItem.title = Constants.settingsTitle
         return controller
     }
 }
 
 extension Coordinator: ErrorHandler {
     func handleError(_ error: any Error) {
-        window.rootViewController?.present(UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert), animated: true)
+        let controller = UIAlertController(title: Constants.errorTitle, message: error.localizedDescription, preferredStyle: .alert)
+        controller.addAction(.init(title: Constants.closeTitle, style: .destructive))
+        window.rootViewController?.present(controller, animated: true)
     }
 }
 
@@ -81,5 +83,17 @@ extension Coordinator: ImagePickerPresenter {
                 }
             }
         }
+    }
+}
+
+extension Coordinator {
+    private enum Constants {
+        static let errorTitle = "Error"
+        static let closeTitle = "Close"
+        static let settingsTitle = "Settings"
+        static let photoEffectTitle = "Photo Effect"
+        static let effectImageName = "scribble.variable"
+        static let settingsImageName = "gearshape"
+        
     }
 }

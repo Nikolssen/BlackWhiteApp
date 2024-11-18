@@ -12,32 +12,40 @@ enum PhotoEffect { }
 
 extension PhotoEffect {
     final class ViewController: UIViewController {
-        
-        private var draggableImageView: UIImageView = {
+
+        private let draggableImageView: UIImageView = {
             let imageView = UIImageView()
             imageView.contentMode = .scaleAspectFill
             imageView.layer.borderWidth = 2
-            imageView.layer.borderColor = UIColor.yellow.cgColor
+            imageView.layer.borderColor = UIColor.black.cgColor
             imageView.layer.masksToBounds = true
             imageView.isHidden = true
             imageView.isUserInteractionEnabled = true
             return imageView
         }()
         
-        private var addImageView: UIImageView = {
-            let imageView = UIImageView(image: UIImage(systemName: "plus.circle"))
+        private let addImageView: UIImageView = {
+            let imageView = UIImageView(image: UIImage(systemName: Constants.addImageName))
             imageView.contentMode = .scaleAspectFit
             imageView.tintColor = .lightGray
             return imageView
         }()
         
-        private var addImageLabel: UILabel = {
+        private let addImageLabel: UILabel = {
             let label = UILabel()
-            label.text = "Tap anywhere to open a photo"
+            label.text = Constants.addTitle
             label.font = .systemFont(ofSize: 16, weight: .semibold)
             label.textColor = .lightGray
             label.numberOfLines = 2
             return label
+        }()
+        
+        private let toolBar: UIToolbar = {
+            let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: Constants.toolBarHeight))
+            toolbar.barTintColor = .white
+            toolbar.isTranslucent = true
+            toolbar.tintColor = .black
+            return toolbar
         }()
         
         private var addGestureRecognizer: UITapGestureRecognizer?
@@ -58,8 +66,10 @@ extension PhotoEffect {
         
         override func viewDidLoad() {
             super.viewDidLoad()
+            navigationItem.title = Constants.photoEffectTitle
+            navigationItem.style = .editor
             
-            [draggableImageView, addImageView, addImageLabel].forEach {
+            [draggableImageView, addImageView, addImageLabel, toolBar].forEach {
                 view.addSubview($0)
             }
             
@@ -83,40 +93,95 @@ extension PhotoEffect {
                 .sink { [weak self] isSelected in
                     guard let self else { return }
                     
-                    if isSelected {
+                    if isSelected, let image = viewModel.processedImage ?? viewModel.image {
                         view.removeGestureRecognizer(addGestureRecognizer)
-                        draggableImageView.image = viewModel.image
-                        draggableImageView.frame = .init(origin: .zero, size: .init(width: 400, height: 400))
-                        draggableImageView.center = view.center
-                        initialCenter = view.center
+                        let isProcessed = viewModel.processedImage != nil
+                        draggableImageView.image = image
+                       
+                        if !isProcessed {
+                            draggableImageView.transform = .identity
+                            let ratio = image.size.width / image.size.height
+                            
+                            if let bounds = view.window?.screen.bounds, bounds.width != 0 {
+                                draggableImageView.frame = .init(origin: .zero, size: .init(width: bounds.width, height: bounds.width / ratio))
+                            } else {
+                                draggableImageView.frame = .init(origin: .zero, size: .init(width: Constants.defaultImageWidth, height: Constants.defaultImageWidth / ratio))
+                            }
+
+                            draggableImageView.center = view.center
+                            initialCenter = view.center
+                        }
+
                     } else {
                         view.addGestureRecognizer(addGestureRecognizer)
+                        draggableImageView.image = nil
                     }
                     
                     addImageView.isHidden = isSelected
                     addImageLabel.isHidden = isSelected
                     draggableImageView.isHidden = !isSelected
+                    toolBar.isHidden = !isSelected
 
                 }
                 .store(in: &cancellables)
             
             configureLayout()
+            configureToolBar()
         }
         
         private func configureLayout() {
             addImageView.translatesAutoresizingMaskIntoConstraints = false
             addImageLabel.translatesAutoresizingMaskIntoConstraints = false
+            toolBar.translatesAutoresizingMaskIntoConstraints = false
             
             NSLayoutConstraint.activate([
                 addImageView.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
                 addImageView.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
-                addImageView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 80),
+                addImageView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Constants.addElementsHorizontalInset),
                 addImageView.widthAnchor.constraint(equalTo: addImageView.heightAnchor),
                 
-                addImageLabel.topAnchor.constraint(equalTo: addImageView.bottomAnchor, constant: 20),
-                addImageLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 80),
-                addImageLabel.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor)
+                addImageLabel.topAnchor.constraint(equalTo: addImageView.bottomAnchor, constant: Constants.addElementsInterspace),
+                addImageLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Constants.addElementsHorizontalInset),
+                addImageLabel.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+                
+                toolBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+                toolBar.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+                toolBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
                 ])
+        }
+        
+        private func configureToolBar() {
+            
+            let actions = viewModel.filterTitles.enumerated().map { (index, title) in
+                UIAction(title: title, handler: { [index, weak self] _ in
+                    self?.viewModel.filterSelectionIndexSubject.send(index)
+                })
+            }
+            
+            let menuItem = UIBarButtonItem(image: UIImage(systemName: Constants.effectImageName), menu: UIMenu.init(title: Constants.effectTitle, children: actions))
+            toolBar.items = [
+                UIBarButtonItem(title: Constants.clearTitle, image: nil, target: self, action: #selector(clear)),
+                UIBarButtonItem.flexibleSpace(),
+                menuItem,
+                UIBarButtonItem.flexibleSpace(),
+                UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(save))
+            ]
+        }
+        
+        @objc private func save() {
+            if let image = viewModel.processedImage ?? viewModel.image {
+                UIImageWriteToSavedPhotosAlbum(image, self, #selector(savedImage), nil)
+            }
+        }
+        
+        @objc private func savedImage(image: UIImage, error: Error?, context: UnsafeMutableRawPointer?) {
+            if let error {
+                viewModel.handleError(SaveError.defaultError)
+            }
+        }
+        
+        @objc private func clear() {
+            viewModel.isImageSelectedSubject.send(false)
         }
         
         @objc private func addImage() {
@@ -137,10 +202,9 @@ extension PhotoEffect {
         
         @objc private func zoomImage(_ gestureRecognizer: UIPinchGestureRecognizer) {
             guard let view = gestureRecognizer.view else { return }
-            print(gestureRecognizer.state.rawValue, gestureRecognizer.scale)
             if gestureRecognizer.state == .began || gestureRecognizer.state == .changed {
                 let transform = view.transform.scaledBy(x: gestureRecognizer.scale, y: gestureRecognizer.scale)
-                if transform.a < 4 && transform.a > 0.25 {
+                if transform.a < Constants.maxZoomScale && transform.a > Constants.minZoomScale {
                     view.transform = transform
                 }
             }
@@ -152,7 +216,6 @@ extension PhotoEffect {
             
             if gestureRecognizer.state == .began || gestureRecognizer.state == .changed {
                 view.transform = view.transform.rotated(by: gestureRecognizer.rotation)
-                print(view.frame, view.bounds)
             }
             gestureRecognizer.rotation = 0
         }
@@ -166,5 +229,31 @@ extension PhotoEffect.ViewController: UIGestureRecognizerDelegate {
     
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         true
+    }
+    
+    private enum Constants {
+        static let maxZoomScale: CGFloat = 4
+        static let minZoomScale: CGFloat = 0.25
+        
+        static let addElementsHorizontalInset: CGFloat = 80
+        static let addElementsInterspace: CGFloat = 20
+        static let defaultImageWidth: CGFloat = 400
+        static let toolBarHeight: CGFloat = 35
+        
+        static let addTitle: String = "Tap anywhere to open a photo"
+        static let clearTitle: String = "Clear"
+        static let effectTitle: String = "Effect"
+        static let photoEffectTitle = "Photo Effect"
+        
+        static let effectImageName: String = "wand.and.sparkles"
+        static let addImageName: String = "plus.circle"
+    }
+}
+
+enum SaveError: LocalizedError {
+    case defaultError
+    
+    var errorDescription: String? {
+        return "Error saving photo. Please, check the application permissions and try again"
     }
 }
