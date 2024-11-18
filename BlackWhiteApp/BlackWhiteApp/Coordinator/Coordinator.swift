@@ -42,18 +42,22 @@ final class Coordinator {
     }
     
     private var settingsController: UIViewController {
-        let controller = UINavigationController(rootViewController: Settings.ViewController())
+        let controller = UINavigationController(rootViewController: Settings.ViewController(viewModel: Settings.ViewModel(coordinator: self)))
         controller.tabBarItem.image = UIImage(systemName: Constants.settingsImageName)
         controller.tabBarItem.title = Constants.settingsTitle
         return controller
     }
 }
 
-extension Coordinator: ErrorHandler {
-    func handleError(_ error: any Error) {
-        let controller = UIAlertController(title: Constants.errorTitle, message: error.localizedDescription, preferredStyle: .alert)
-        controller.addAction(.init(title: Constants.closeTitle, style: .destructive))
+extension Coordinator: AlertPresenter, ErrorHandler {
+    func presentAlert(with title: String, message: String) {
+        let controller = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        controller.addAction(.init(title: Constants.closeTitle, style: .default))
         window.rootViewController?.present(controller, animated: true)
+    }
+    
+    func handleError(_ error: any Error) {
+        presentAlert(with: Constants.errorTitle, message: error.localizedDescription)
     }
 }
 

@@ -175,7 +175,7 @@ extension PhotoEffect {
         }
         
         @objc private func savedImage(image: UIImage, error: Error?, context: UnsafeMutableRawPointer?) {
-            if let error {
+            if error != nil {
                 viewModel.handleError(SaveError.defaultError)
             }
         }
